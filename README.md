@@ -1,1 +1,1 @@
-Convert CSV files to [Trevni](http://cutting.github.com/trevni) files.
+Convert CSV files to [Trevni](https://github.com/cutting/trevni) files.
