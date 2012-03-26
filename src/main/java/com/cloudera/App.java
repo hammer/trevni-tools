@@ -2,14 +2,21 @@ package com.cloudera;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Random;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+import org.apache.commons.io.FilenameUtils;
+
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 
@@ -18,6 +25,7 @@ import org.apache.trevni.ColumnFileReader;
 import org.apache.trevni.ColumnFileWriter;
 import org.apache.trevni.ColumnMetaData;
 import org.apache.trevni.ValueType;
+import org.apache.trevni.avro.AvroShredder;
 
 public class App {
     private static String codec = "snappy";
@@ -74,9 +82,40 @@ public class App {
 	}
     }
 
+    public static long jsonToShreddedTrevni(String jsonFilename) throws Exception {
+	// get the schema that corresponds to the JSON datum
+	String avscFilename = "schemas/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".avsc";
+	File avscFile = new File(avscFilename);
+	Parser p = new Parser();
+	Schema s = p.parse(avscFile);
+
+	// read in the JSON-encoded datum
+	GenericDatumReader<Object> reader = new GenericDatumReader<Object>(s);
+	Decoder e = DecoderFactory.get().jsonDecoder(s, new FileInputStream(new File(jsonFilename)));
+	Object datum = reader.read(null, e);
+
+	// create an AvroShredder instance and shred some columns!!!
+	AvroShredder as = new AvroShredder(s, GenericData.get());
+	ColumnFileWriter out = new ColumnFileWriter(createFileMeta(), as.getColumns());
+	as.shred(datum, out);
+	String trevniFilename = "data/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".trv";
+	File trevniFile = new File(trevniFilename);
+	trevniFile.delete();
+	out.writeTo(trevniFile);
+
+	// count the number of columns in the shredded table
+	ColumnFileReader in = new ColumnFileReader(trevniFile);
+	ColumnMetaData[] read_cols = in.getColumnMetaData();
+	for (int i = 0; i < read_cols.length; i++) {
+	    System.out.println("Column " + i + " is named " + read_cols[i].getName() + " and is of type " + read_cols[i].getType());
+	}
+	return in.getColumnCount();
+    }
+
     public static void main(String[] args) throws Exception
     {
 	//        System.out.println("Rows read: " + CSVToTrevni(args[0], args[1]));
-	avscToJSON(args[0], args[1]);
+	//	avscToJSON(args[0], args[1]);
+	System.out.println("Columns shredded: " + jsonToShreddedTrevni(args[0]));
     }
 }
