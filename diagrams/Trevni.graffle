@@ -753,7 +753,7 @@ metadata}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{209.43239, 206.92801}, {29.019716, 15.002666}}</string>
+			<string>{{209.43239, 208.99738}, {29.019716, 15.002666}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -1769,7 +1769,7 @@ metadata}</string>
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2012-03-24 06:16:12 +0000</string>
+	<string>2012-03-24 06:19:46 +0000</string>
 	<key>Modifier</key>
 	<string>Jeff Hammerbacher</string>
 	<key>NotesVisible</key>

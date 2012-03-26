@@ -1,0 +1,29 @@
+{
+    "type": "record",
+    "name": "S",
+    "fields": [
+        {
+            "name": "a",
+            "type": [
+                "int",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "record",
+                        "name": "R",
+                        "fields": [
+                            {
+                                "name": "x",
+                                "type": "int"
+                            },
+                            {
+                                "name": "y",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

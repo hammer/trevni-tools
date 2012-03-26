@@ -1,0 +1,17 @@
+{
+    "type": "array",
+    "items": {
+        "type": "record",
+        "name": "R",
+        "fields": [
+            {
+                "name": "x",
+                "type": "int"
+            },
+            {
+                "name": "y",
+                "type": "string"
+            }
+        ]
+    }
+}
