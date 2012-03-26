@@ -7,18 +7,21 @@
             "type": "int"
         },
         {
-            "type": "record",
             "name": "R",
-            "fields": [
-                {
-                    "name": "x",
-                    "type": "int"
-                },
-                {
-                    "name": "y",
-                    "type": "string"
-                }
-            ]
+            "type": {
+                "name": "R",
+                "type": "record",
+                "fields": [
+                    {
+                        "name": "x",
+                        "type": "int"
+                    },
+                    {
+                        "name": "y",
+                        "type": "string"
+                    }
+                ]
+            }
         },
         {
             "name": "y",
