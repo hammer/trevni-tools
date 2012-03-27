@@ -1,0 +1,23 @@
+[
+    "null",
+    {
+        "name": "R",
+        "type": "record",
+        "fields": [
+            {
+                "name": "i",
+                "type": {
+                    "type": "array",
+                    "items": "long"
+                }
+            },
+            {
+                "name": "j",
+                "type": {
+                    "type": "array",
+                    "items": "long"
+                }
+            }
+        ]
+    }
+]
