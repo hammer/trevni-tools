@@ -18,7 +18,7 @@
                             },
                             {
                                 "name": "y",
-                                "type": "string"
+                                "type": "int"
                             }
                         ]
                     }

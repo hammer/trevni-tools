@@ -9,8 +9,8 @@
         {
             "name": "R",
             "type": {
-                "name": "R",
                 "type": "record",
+                "name": "R",
                 "fields": [
                     {
                         "name": "x",
@@ -18,14 +18,14 @@
                     },
                     {
                         "name": "y",
-                        "type": "string"
+                        "type": "int"
                     }
                 ]
             }
         },
         {
             "name": "y",
-            "type": "string"
+            "type": "int"
         }
     ]
 }

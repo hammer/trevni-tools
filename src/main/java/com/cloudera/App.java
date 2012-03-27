@@ -13,6 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.StringType;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.Decoder;
@@ -90,12 +91,19 @@ public class App {
 	Schema s = p.parse(avscFile);
 
 	// read in the JSON-encoded datum
+	GenericData.setStringType(s, GenericData.StringType.String);
 	GenericDatumReader<Object> reader = new GenericDatumReader<Object>(s);
 	Decoder e = DecoderFactory.get().jsonDecoder(s, new FileInputStream(new File(jsonFilename)));
 	Object datum = reader.read(null, e);
 
-	// create an AvroShredder instance and shred some columns!!!
-	AvroShredder as = new AvroShredder(s, GenericData.get());
+	// create an AvroShredder instance
+	AvroShredder as = new AvroShredder(s, reader.getData());
+	ColumnMetaData[] columnized_cols = as.getColumns();
+	for (int i = 0; i < columnized_cols.length; i++) {
+	    System.out.println("Columnized column " + i + " is named " + columnized_cols[i].getName() + " and is of type " + columnized_cols[i].getType());
+	}
+	
+	// shred some columns!
 	ColumnFileWriter out = new ColumnFileWriter(createFileMeta(), as.getColumns());
 	as.shred(datum, out);
 	String trevniFilename = "data/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".trv";
