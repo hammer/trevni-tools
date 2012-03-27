@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
+import org.apache.avro.Schema.Field;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.StringType;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -83,6 +84,30 @@ public class App {
 	}
     }
 
+    public static void modifyStringTypes(Schema s) throws Exception {
+	switch (s.getType()) {
+	case STRING:
+	    GenericData.setStringType(s, GenericData.StringType.String);
+	    break;
+	case ARRAY:
+	    modifyStringTypes(s.getElementType());
+	    break;
+	case MAP:
+	    modifyStringTypes(s.getValueType());  // not sure how to get key type
+	    break;
+	case RECORD:
+	    for (Field f : s.getFields()) {
+		modifyStringTypes(f.schema());
+	    }
+	    break;
+	case UNION:
+	    for (Schema branch_schema : s.getTypes()) {
+		modifyStringTypes(branch_schema);
+	    }
+	    break;
+	}
+    }
+
     public static long jsonToShreddedTrevni(String jsonFilename) throws Exception {
 	// get the schema that corresponds to the JSON datum
 	String avscFilename = "schemas/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".avsc";
@@ -91,7 +116,7 @@ public class App {
 	Schema s = p.parse(avscFile);
 
 	// read in the JSON-encoded datum
-	GenericData.setStringType(s, GenericData.StringType.String);
+	modifyStringTypes(s);  // Use String, not Utf8
 	GenericDatumReader<Object> reader = new GenericDatumReader<Object>(s);
 	Decoder e = DecoderFactory.get().jsonDecoder(s, new FileInputStream(new File(jsonFilename)));
 	Object datum = reader.read(null, e);
@@ -122,8 +147,6 @@ public class App {
 
     public static void main(String[] args) throws Exception
     {
-	//        System.out.println("Rows read: " + CSVToTrevni(args[0], args[1]));
-	//	avscToJSON(args[0], args[1]);
 	System.out.println("Columns shredded: " + jsonToShreddedTrevni(args[0]));
     }
 }
