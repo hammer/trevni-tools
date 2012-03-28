@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Random;
 
 import au.com.bytecode.opencsv.CSVReader;
 
 import org.apache.commons.io.FilenameUtils;
+
+import com.google.common.base.Joiner;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
@@ -108,6 +111,17 @@ public class App {
 	}
     }
 
+    public static String getFamilyTree(ColumnMetaData col) {
+	ArrayList<String> familyTree = new ArrayList<String>();
+	ColumnMetaData parent = col.getParent();
+	while (parent != null) {
+	    familyTree.add(0, parent.getName());
+	    parent = parent.getParent();
+	}
+	Joiner joiner = Joiner.on("->");
+	return joiner.join(familyTree);
+    }
+
     public static long jsonToShreddedTrevni(String jsonFilename) throws Exception {
 	// get the schema that corresponds to the JSON datum
 	String avscFilename = "schemas/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".avsc";
@@ -125,7 +139,12 @@ public class App {
 	AvroShredder as = new AvroShredder(s, reader.getData());
 	ColumnMetaData[] columnized_cols = as.getColumns();
 	for (int i = 0; i < columnized_cols.length; i++) {
-	    System.out.println("Columnized column " + i + " is named " + columnized_cols[i].getName() + " and is of type " + columnized_cols[i].getType());
+	    System.out.println("Columnized column " + i);
+	    System.out.println("  Name: " + columnized_cols[i].getName());
+	    System.out.println("  Type: " + columnized_cols[i].getType());
+	    System.out.println("  isArray: " + columnized_cols[i].isArray());
+	    System.out.println("  Parent: " + columnized_cols[i].getParent());
+	    System.out.println("  Family Tree: " + getFamilyTree(columnized_cols[i]));
 	}
 	
 	// shred some columns!
