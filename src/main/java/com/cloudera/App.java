@@ -31,6 +31,7 @@ import org.apache.trevni.ColumnFileWriter;
 import org.apache.trevni.ColumnMetaData;
 import org.apache.trevni.ValueType;
 import org.apache.trevni.avro.AvroShredder;
+import org.apache.trevni.avro.AvroDissector;
 
 public class App {
     private static String codec = "snappy";
@@ -164,8 +165,44 @@ public class App {
 	return in.getColumnCount();
     }
 
+    public static long jsonToDissectedTrevni(String jsonFilename) throws Exception {
+	// get the schema that corresponds to the JSON datum                                                                                                                                     
+	String avscFilename = "schemas/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".avsc";
+	File avscFile = new File(avscFilename);
+	Parser p = new Parser();
+	Schema s = p.parse(avscFile);
+
+	// read in the JSON-encoded datum                                                                                                                                                        
+	modifyStringTypes(s);  // Use String, not Utf8                                                                                                                                           
+	GenericDatumReader<Object> reader = new GenericDatumReader<Object>(s);
+	Decoder e = DecoderFactory.get().jsonDecoder(s, new FileInputStream(new File(jsonFilename)));
+	Object datum = reader.read(null, e);
+
+        // dissect some columns!                                                                                                                                                                 
+        AvroDissector ad = new AvroDissector(s, reader.getData());
+        ColumnFileWriter out = new ColumnFileWriter(createFileMeta(), ad.getColumns());
+        ad.dissect(datum, out);
+
+        // write to file                                                                                                                                                                         
+        String trevniFilename = "data/" + FilenameUtils.getName(FilenameUtils.removeExtension(jsonFilename)) + ".trv";
+        File trevniFile = new File(trevniFilename);
+        trevniFile.delete();
+        out.writeTo(trevniFile);
+
+        // count the number of columns in the shredded table                                                                                                                                     
+        ColumnFileReader in = new ColumnFileReader(trevniFile);
+        ColumnMetaData[] read_cols = in.getColumnMetaData();
+        for (int i = 0; i < read_cols.length; i++) {
+            System.out.println(read_cols[i].getName() + ":");
+            for (Object column_value : in.getValues(i)) {
+                System.out.println(column_value);
+            }
+        }
+        return in.getColumnCount();
+    }
+
     public static void main(String[] args) throws Exception
     {
-	System.out.println("Columns shredded: " + jsonToShreddedTrevni(args[0]));
+	System.out.println("Columns dissected: " + jsonToDissectedTrevni(args[0]));
     }
 }
